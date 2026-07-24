@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Hava Durumu</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        /* başlık */
+        h1 {
+            color: white;
+            font-size: 32px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        /* şehir ekleme formu */
+        .arama-kutusu {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        .arama-kutusu input {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            width: 280px;
+            outline: none;
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+
+        .arama-kutusu input::placeholder { color: rgba(255,255,255,0.6); }
+        .arama-kutusu input:focus { background: rgba(255,255,255,0.25); }
+
+        .arama-kutusu button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: #e94560;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .arama-kutusu button:hover { background: #c73652; }
+
+        /* kartların yan yana dizilmesi */
+        .kartlar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            max-width: 1200px;
+        }
+
+        /* hava durumu kartı */
+        .hava-karti {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 260px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        /* sil butonu */
+        .sil-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sil-btn:hover { background: #e94560; }
+
+        /* hava ikonu */
+        .hava-ikon { font-size: 60px; margin-bottom: 10px; }
+
+        /* şehir adı */
+        .sehir-adi { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+
+        /* hava durumu açıklaması */
+        .durum { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 15px; }
+
+        /* büyük sıcaklık */
+        .sicaklik { font-size: 60px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+
+        .hissedilen { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 15px; }
+
+        /* alt bilgi satırı */
+        .bilgi-satiri {
+            display: flex;
+            justify-content: space-around;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .bilgi-kutu .deger { font-size: 18px; font-weight: 700; }
+        .bilgi-kutu .etiket { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 3px; }
+
+        /* şehir yok mesajı */
+        .bos-mesaj {
+            color: rgba(255,255,255,0.5);
+            font-size: 16px;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🌤 Hava Durumu</h1>
+
+    <!-- ŞEHİR EKLEME FORMU -->
+    <div class="arama-kutusu">
+        <form action="/ekle" method="POST" style="display:flex; gap:10px;">
+            <input type="text" name="sehir" placeholder="Şehir ekle..." required>
+            <button type="submit">+ Ekle</button>
+        </form>
+    </div>
+
+    <!-- HAVA DURUMU KARTLARI -->
+    <div class="kartlar">
+        {% if hava_listesi %}
+            {% for hava in hava_listesi %}
+                <div class="hava-karti">
+
+                    <!-- sil butonu -->
+                    <form action="/sil/{{ loop.index }}" method="POST">
+                        <button type="submit" class="sil-btn">✕</button>
+                    </form>
+
+                    <!-- hava ikonu -->
+                    <div class="hava-ikon">
+                        {% if "rain" in hava.durum | lower %}🌧
+                        {% elif "cloud" in hava.durum | lower %}☁️
+                        {% elif "snow" in hava.durum | lower %}❄️
+                        {% elif "thunder" in hava.durum | lower %}⛈
+                        {% elif "fog" in hava.durum | lower %}🌫
+                        {% else %}☀️
+                        {% endif %}
+                    </div>
+
+                    <div class="sehir-adi">{{ hava.sehir | title }}</div>
+                    <div class="durum">{{ hava.durum }}</div>
+                    <div class="sicaklik">{{ hava.sicaklik }}°</div>
+                    <div class="hissedilen">Hissedilen: {{ hava.hissedilen }}°C</div>
+
+                    <div class="bilgi-satiri">
+                        <div class="bilgi-kutu">
+                            <div class="deger">💧{{ hava.nem }}%</div>
+                            <div class="etiket">Nem</div>
+                        </div>
+                        <div class="bilgi-kutu">
+                            <div class="deger">💨{{ hava.ruzgar }}</div>
+                            <div class="etiket">Rüzgar km/s</div>
+                        </div>
+                    </div>
+
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="bos-mesaj">Henüz şehir eklenmedi. Yukarıdan şehir ekleyebilirsiniz.</p>
+        {% endif %}
+    </div>
+
+</body>
+</html>
