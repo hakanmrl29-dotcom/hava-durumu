@@ -12,17 +12,18 @@ db = SQLAlchemy(app)
 
 # şehir modeli
 class Sehir(db.Model):
-    id    = db.Column(db.Integer, primary_key=True)
-    isim  = db.Column(db.String(100), nullable=False)
+    id   = db.Column(db.Integer, primary_key=True)
+    isim = db.Column(db.String(100), nullable=False)
 
 # hava durumu verisi çekme fonksiyonu
-def hava_getir(sehir):
+def hava_getir(sehir_id, sehir_adi):
     try:
-        url   = "https://wttr.in/" + sehir + "?format=j1"
+        url   = "https://wttr.in/" + sehir_adi + "?format=j1"
         istek = urllib.request.urlopen(url, timeout=5)
         veri  = json.loads(istek.read().decode("utf-8"))
         return {
-            "sehir"      : sehir,
+            "id"         : sehir_id,
+            "sehir"      : sehir_adi,
             "sicaklik"   : veri["current_condition"][0]["temp_C"],
             "hissedilen" : veri["current_condition"][0]["FeelsLikeC"],
             "nem"        : veri["current_condition"][0]["humidity"],
@@ -42,7 +43,7 @@ def ana_sayfa():
     # her şehir için hava durumu çek
     hava_listesi = []
     for s in sehirler:
-        hava = hava_getir(s.isim)
+        hava = hava_getir(s.id, s.isim)
         if hava:
             hava_listesi.append(hava)
 
@@ -62,8 +63,9 @@ def ekle():
 @app.route("/sil/<int:id>", methods=["POST"])
 def sil(id):
     silinecek = db.session.get(Sehir, id)
-    db.session.delete(silinecek)
-    db.session.commit()
+    if silinecek:
+        db.session.delete(silinecek)
+        db.session.commit()
     return redirect(url_for("ana_sayfa"))
 
 if __name__ == "__main__":

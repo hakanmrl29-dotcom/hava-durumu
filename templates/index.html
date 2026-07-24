@@ -16,7 +16,6 @@
             padding: 40px 20px;
         }
 
-        /* başlık */
         h1 {
             color: white;
             font-size: 32px;
@@ -154,7 +153,7 @@
                 <div class="hava-karti">
 
                     <!-- sil butonu -->
-                    <form action="/sil/{{ loop.index }}" method="POST">
+                    <form action="/sil/{{ hava.id }}" method="POST">
                         <button type="submit" class="sil-btn">✕</button>
                     </form>
 
